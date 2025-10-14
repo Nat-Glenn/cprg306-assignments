@@ -11,6 +11,9 @@ export default function Home(){
       <ul>
         <li><Link href="./week-3">Week 3 Assignment</Link></li>
       </ul>
+      <ul>
+        <li><Link href="./week-4">Week 3 Assignment</Link></li>
+      </ul>
     </main>
   );
 }
