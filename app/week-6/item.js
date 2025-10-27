@@ -1,6 +1,3 @@
-
-
-
 export default function Item(props){
 
     let {name, quantity, category} = props;
