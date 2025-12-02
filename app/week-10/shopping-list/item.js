@@ -1,3 +1,4 @@
+// app/week-8/item.js
 export default function Item(props) {
   const { name, quantity, category, onSelect } = props;
 

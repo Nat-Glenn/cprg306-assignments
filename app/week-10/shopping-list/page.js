@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import NewItem from "./new-item";
 import ItemList from "./item-list";
 import MealIdeas from "./meal-ideas";
-import itemsData from "./items.json";
 import { useUserAuth } from "../_utils/auth-context";
+import  { getItems, addItem } from "../_services/shopping-list-service";
 
 // helper functions unchanged
 function removeEmojis(str) {
@@ -24,22 +24,44 @@ function cleanItemName(name) {
 }
 
 export default function Page() {
-  // Part 6: get the current user from AuthContext
   const { user } = useUserAuth();
-
-  const [items, setItems] = useState(itemsData);
+  const [items, setItems] = useState([]); // initial state is an empty array
   const [selectedItemName, setSelectedItemName] = useState("");
-
-  function handleAddItem(item) {
-    setItems((prev) => [...prev, item]);
+  
+  async function loadItems() {
+  if (!user) return;             // no user, nothing to load
+  try {
+    const dbItems = await getItems(user.uid);
+    setItems(dbItems);           // update state with items from Firestore
+  } catch (err) {
+    console.error("Error loading items:", err);
   }
+}
+
+useEffect(() => {
+  loadItems();
+}, [user]); // when user logs in or changes, reload items
+
+
+  async function handleAddItem(item) {
+  if (!user) return;   
+
+  try {
+    const newId = await addItem(user.uid, item); // write to Firestore
+    const newItemWithId = { ...item, id: newId };
+
+    setItems(prev => [...prev, newItemWithId]);
+  } catch (err) {
+    console.error("Error adding item:", err);
+  }
+}
+
 
   function handleItemSelect(item) {
     const cleaned = cleanItemName(item.name);
     setSelectedItemName(cleaned);
   }
 
-  // If there is no logged-in user, do NOT render the shopping list UI.
   if (!user) {
     return (
       <main className="min-h-screen bg-gray-100 p-6">
@@ -58,7 +80,6 @@ export default function Page() {
     );
   }
 
-  // If user IS logged in, render the normal shopping list UI
   return (
     <main className="min-h-screen bg-gray-100 p-6">
       <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">
